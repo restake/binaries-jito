@@ -31,7 +31,7 @@ jobs:
     steps:
       - run:
           name: "Clone jito-solana source"
-          command: >
+          command: |
             git clone -b << pipeline.parameters.version >>-jito https://github.com/jito-foundation/jito-solana.git --recurse-submodules
             cd jito-solana
             git submodule update --init --recursive
