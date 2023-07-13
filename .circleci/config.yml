@@ -7,7 +7,7 @@ orbs:
 parameters:
   version:
     type: "string"
-    default: "v1.14.19-jito"
+    default: "v1.14.19"
   run:
     type: "boolean"
     default: false
@@ -32,7 +32,7 @@ jobs:
       - run:
           name: "Clone jito-solana source"
           command: >
-            git clone -b << pipeline.parameters.version >> https://github.com/jito-foundation/jito-solana.git --recurse-submodules
+            git clone -b << pipeline.parameters.version >>-jito https://github.com/jito-foundation/jito-solana.git --recurse-submodules
             cd jito-solana
             git submodule update --init --recursive
       - restore_cache:
