@@ -13,7 +13,7 @@ parameters:
     default: false
 
 workflows:
-  picasso:
+  jito:
     when: << pipeline.parameters.run >>
     jobs:
       - build
