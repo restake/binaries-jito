@@ -47,10 +47,6 @@ jobs:
           name: "Build jito-solana binary"
           command: |
             cd jito-solana
-
-            # Target Zen 3 microarchitecture
-            export RUSTFLAGS="-C target-cpu=znver3"
-
             CI_COMMIT=$(git rev-parse HEAD) scripts/cargo-install-all.sh --validator-only .
             mv "${HOME}/project/jito-solana/target/release/solana-validator" "${HOME}/project/jito-solana/target/release/solana-validator-<< pipeline.parameters.version >>"
       - save_cache:
