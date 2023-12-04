@@ -1,0 +1,96 @@
+---
+name: "Build JITO release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Specify the version"
+        required: true
+        default: "v1.16.19"
+  pull_request:
+    branches:
+      - "master"
+
+permissions:
+  contents: "write"
+
+env:
+  JITO_VERSION: "${{ inputs.version || 'v1.16.19' }}"
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: "ubuntu-latest-l"
+    steps:      
+      - id: "setup-rust"
+        name: "Set up Rust toolchain"
+        uses: "dtolnay/rust-toolchain@v1"
+        with:
+          toolchain: "stable"
+
+      - id: "setup-dependencies"
+        name: "Install required system packages"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev libudev-dev pkg-config zlib1g-dev llvm clang cmake make libprotobuf-dev protobuf-compiler
+
+      - id: "clone"
+        name: "Clone jito-solana source"
+        uses: "actions/checkout@v4"
+        with:
+          repository: "jito-foundation/jito-solana"
+          fetch-tags: true
+          path: "jito-solana"
+          ref: "refs/tags/${{ env.JITO_VERSION }}-jito"
+          submodules: true
+
+      - id: "cache"
+        name: "Cache Cargo dependencies"
+        uses: "actions/cache@v3"
+        with:
+          path: "~/.cargo"
+          key: "cargo-${{ hashFiles('jito-solana/Cargo.lock') }}"
+
+      - id: "build"
+        name: "Build jito-solana binary"
+        run: |
+          cd jito-solana
+          CI_COMMIT=$(git rev-parse HEAD) scripts/cargo-install-all.sh --validator-only .
+          mv target/release/solana-validator "target/release/solana-validator-${{ env.JITO_VERSION }}"          
+
+      - id: "upload-artifact"
+        name: "Save binary to workspace"
+        uses: "actions/upload-artifact@v3"
+        with:
+          name: "solana-validator"
+          path: "jito-solana/target/release/solana-validator-*"
+          if-no-files-found: "error"
+          retention-days: 1
+
+  publish:
+    name: "Publish"
+    needs: "build"
+    runs-on: "ubuntu-latest"
+    if: "${{ github.event_name == 'workflow_dispatch' }}"
+    steps:
+      - id: "download-artifact"
+        name: "Download binary from workspace"
+        uses: "actions/download-artifact@v3"
+        with:
+          name: "solana-validator"
+          path: "binaries"
+
+      - id: "publish"
+        name: "Publish Github release"
+        uses: "softprops/action-gh-release@v1"
+        with:
+          body: |
+            For changes, see here: https://github.com/jito-foundation/jito-solana/releases/tag/${{ env.JITO_VERSION }}-jito
+          files: |
+            binaries/solana-validator-${{ env.JITO_VERSION }}
+          tag_name: "${{ env.JITO_VERSION }}"
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
+          generate_release_notes: true
