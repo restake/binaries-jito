@@ -56,7 +56,9 @@ jobs:
         name: "Build jito-solana binary"
         run: |
           cd jito-solana
-          CI_COMMIT=$(git rev-parse HEAD) scripts/cargo-install-all.sh --validator-only .
+          export CI_COMMIT=$(git rev-parse HEAD)
+          export CARGO_BUILD_RUSTFLAGS="-C target-cpu=znver3"
+          scripts/cargo-install-all.sh --validator-only .
           mv target/release/solana-validator "target/release/solana-validator-${{ env.JITO_VERSION }}"
 
       - id: "upload-artifact"
