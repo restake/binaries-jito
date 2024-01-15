@@ -22,7 +22,7 @@ jobs:
   build:
     name: "Build"
     runs-on: "ubuntu-latest-l"
-    steps:      
+    steps:
       - id: "setup-rust"
         name: "Set up Rust toolchain"
         uses: "dtolnay/rust-toolchain@v1"
@@ -57,7 +57,7 @@ jobs:
         run: |
           cd jito-solana
           CI_COMMIT=$(git rev-parse HEAD) scripts/cargo-install-all.sh --validator-only .
-          mv target/release/solana-validator "target/release/solana-validator-${{ env.JITO_VERSION }}"          
+          mv target/release/solana-validator "target/release/solana-validator-${{ env.JITO_VERSION }}"
 
       - id: "upload-artifact"
         name: "Save binary to workspace"
