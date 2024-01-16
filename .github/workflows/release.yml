@@ -57,7 +57,7 @@ jobs:
         run: |
           cd jito-solana
           export CI_COMMIT=$(git rev-parse HEAD)
-          export CARGO_BUILD_RUSTFLAGS="-C target-cpu=znver3"
+          export CARGO_BUILD_RUSTFLAGS="-C target-cpu=znver4"
           scripts/cargo-install-all.sh --validator-only .
           mv target/release/solana-validator "target/release/solana-validator-${{ env.JITO_VERSION }}"
 
