@@ -55,19 +55,25 @@ jobs:
       - id: "build"
         name: "Build jito-solana binary"
         run: |
+          set -euo pipefail
+
           cd jito-solana
+
           export CI_COMMIT=$(git rev-parse HEAD)
           export CARGO_BUILD_TARGET="x86_64-unknown-linux-gnu"
           export CARGO_BUILD_RUSTFLAGS="-C target-cpu=znver4"
-          scripts/cargo-install-all.sh --validator-only .
-          mv target/release/solana-validator "target/release/solana-validator-${{ env.JITO_VERSION }}"
+
+          cargo build --profile release --bin solana-validator
+
+          mkdir bin
+          mv -v "target/${CARGO_BUILD_TARGET}/release/solana-validator" "bin/solana-validator-${{ env.JITO_VERSION }}"
 
       - id: "upload-artifact"
         name: "Save binary to workspace"
         uses: "actions/upload-artifact@v3"
         with:
           name: "solana-validator"
-          path: "jito-solana/target/release/solana-validator-*"
+          path: "jito-solana/bin/solana-validator-*"
           if-no-files-found: "error"
           retention-days: 1
 
